@@ -45,6 +45,7 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_PHP8_FULLICUDATA \
 	CONFIG_PHP8_GETTEXT \
 	CONFIG_PHP8_INTL \
+	CONFIG_PHP8_OPENSSL \
 	CONFIG_PHP8_SYSTEMTZDATA
 
 PKG_BUILD_DEPENDS:= PHP8_GETTEXT:icu
@@ -105,6 +106,9 @@ define Package/php8/config
 		depends on PHP8_GETTEXT && PHP8_INTL && PACKAGE_php8-mod-intl
 		default n
 
+	config PHP8_OPENSSL
+		bool "Enable building PHP8 with OpenSSL"
+		default y
 endef
 
 define Package/php8
@@ -356,7 +360,7 @@ else
   CONFIGURE_ARGS+= --disable-opcache
 endif
 
-ifneq ($(CONFIG_PACKAGE_php8-mod-openssl)$(CONFIG_PACKAGE_php8-mod-ftp)$(CONFIG_PACKAGE_php8-mod-snmp),)
+ifeq ($(CONFIG_PHP8_OPENSSL),y)
   CONFIGURE_ARGS+= \
 	--with-openssl=shared \
 	--with-kerberos=no \
@@ -684,7 +688,7 @@ $(eval $(call BuildModule,dom,DOM,@PHP8_LIBXML @PHP8_DOM +PACKAGE_php8-mod-dom:l
 $(eval $(call BuildModule,exif,EXIF))
 $(eval $(call BuildModule,fileinfo,Fileinfo))
 $(eval $(call BuildModule,filter,Filter))
-$(eval $(call BuildModule,ftp,FTP,+PACKAGE_php8-mod-ftp:libopenssl))
+$(eval $(call BuildModule,ftp,FTP,@PHP8_OPENSSL +PACKAGE_php8-mod-ftp:libopenssl))
 $(eval $(call BuildModule,gd,GD graphics,+PACKAGE_php8-mod-gd:libgd-full))
 $(eval $(call BuildModule,gettext,Gettext,@PHP8_GETTEXT +PACKAGE_php8-mod-gettext:libintl-full))
 $(eval $(call BuildModule,gmp,GMP,+PACKAGE_php8-mod-gmp:libgmp))
@@ -695,7 +699,7 @@ $(eval $(call BuildModule,mbstring,MBString,+PACKAGE_php8-mod-mbstring:oniguruma
 $(eval $(call BuildModule,mysqli,MySQL Improved Extension,+PACKAGE_php8-mod-mysqli:php8-mod-mysqlnd,30))
 $(eval $(call BuildModule,mysqlnd,MySQL Native Driver,+PACKAGE_php8-mod-openssl:php8-mod-openssl))
 $(eval $(call BuildModule,opcache,OPcache,,,zend))
-$(eval $(call BuildModule,openssl,OpenSSL,+PACKAGE_php8-mod-openssl:libopenssl,15))
+$(eval $(call BuildModule,openssl,OpenSSL,@PHP8_OPENSSL +PACKAGE_php8-mod-openssl:libopenssl,15))
 $(eval $(call BuildModule,pcntl,PCNTL))
 $(eval $(call BuildModule,pdo,PHP Data Objects))
 $(eval $(call BuildModule,pdo-mysql,PDO driver for MySQL,+php8-mod-pdo +PACKAGE_php8-mod-pdo-mysql:php8-mod-mysqlnd))
@@ -706,7 +710,7 @@ $(eval $(call BuildModule,phar,Phar Archives))
 $(eval $(call BuildModule,session,Session))
 $(eval $(call BuildModule,shmop,Shared Memory))
 $(eval $(call BuildModule,simplexml,SimpleXML,@PHP8_LIBXML +PACKAGE_php8-mod-simplexml:libxml2))
-$(eval $(call BuildModule,snmp,SNMP,+PACKAGE_php8-mod-snmp:libnetsnmp +PACKAGE_php8-mod-snmp:libopenssl))
+$(eval $(call BuildModule,snmp,SNMP,@PHP8_OPENSSL +PACKAGE_php8-mod-snmp:libnetsnmp +PACKAGE_php8-mod-snmp:libopenssl))
 $(eval $(call BuildModule,soap,SOAP,@PHP8_LIBXML +PACKAGE_php8-mod-soap:libxml2 +php8-mod-session))
 $(eval $(call BuildModule,sockets,Sockets))
 $(eval $(call BuildModule,sodium,Sodium,+PACKAGE_php8-mod-sodium:libsodium,30))
