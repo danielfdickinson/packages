@@ -47,16 +47,17 @@ define Package/zabbix-agentd/Default
   USERID:=zabbix-agent=53:zabbix-agent=53
 endef
 
-define Package/zabbix-agentd-nossl
+define Package/zabbix-agentd-tiny
   $(call Package/zabbix-agentd/Default)
-  TITLE+= (no SSL)
-  VARIANT:=nossl
+  TITLE+= (core/no SSL)
+  PROVIDES+= zabbix-agentd-nossl
+  VARIANT:=tiny
   DEFAULT_VARIANT:=1
 endef
 
 define Package/zabbix-agentd-openssl
   $(call Package/zabbix-agentd/Default)
-  TITLE+= (with OpenSSL)
+  TITLE+= (core/with OpenSSL)
   DEPENDS+= +libopenssl
   PROVIDES+= zabbix-agentd-ssl
   VARIANT:=openssl
@@ -64,10 +65,31 @@ endef
 
 define Package/zabbix-agentd-gnutls
   $(call Package/zabbix-agentd/Default)
-  TITLE+= (with GnuTLS)
+  TITLE+= (core/with GnuTLS)
   DEPENDS+= +libgnutls
   PROVIDES+= zabbix-agentd-ssl
   VARIANT:=gnutls
+endef
+
+define Package/zabbix-agentd-full
+  $(call Package/zabbix-agentd/Default)
+  TITLE+= (full/with OpenSSL)
+  DEPENDS:= \
+    +libnetsnmp-ssl \
+    +libopenldap \
+    +libopenssl
+  PROVIDES+= zabbix-agentd-ssl
+  VARIANT:=full
+endef
+
+define Package/zabbix-agentd-curl-gnutls
+  $(call Package/zabbix-agentd/Default)
+  TITLE+= (cURL/with GnuTLS)
+  DEPENDS+= \
+    +libcurl-gnutls \
+    +libgnutls
+  PROVIDES+= zabbix-agentd-ssl
+  VARIANT:=curl-gnutls
 endef
 
 define Package/zabbix-sender/Default
@@ -80,16 +102,17 @@ define Package/zabbix-sender/Default
   PROVIDES:=zabbix-sender
 endef
 
-define Package/zabbix-sender-nossl
+define Package/zabbix-sender-tiny
   $(call Package/zabbix-sender/Default)
-  TITLE+= (no SSL)
-  VARIANT:=nossl
+  TITLE+= (core/no SSL)
+  PROVIDES+= zabbix-sender-nossl
+  VARIANT:=tiny
   DEFAULT_VARIANT:=1
 endef
 
 define Package/zabbix-sender-openssl
   $(call Package/zabbix-sender/Default)
-  TITLE+= (with OpenSSL)
+  TITLE+= (core/with OpenSSL)
   DEPENDS+= +libopenssl
   PROVIDES+= zabbix-sender-ssl
   VARIANT:=openssl
@@ -97,7 +120,7 @@ endef
 
 define Package/zabbix-sender-gnutls
   $(call Package/zabbix-sender/Default)
-  TITLE+= (with GnuTLS)
+  TITLE+= (core/with GnuTLS)
   DEPENDS+= +libgnutls
   PROVIDES+= zabbix-sender-ssl
   VARIANT:=gnutls
@@ -110,19 +133,20 @@ define Package/zabbix-get/Default
     $(ICONV_DEPENDS) \
     +libpcre2 \
     +zlib
-  PROVIDES:=@zabbix-get
+  PROVIDES:=zabbix-get
 endef
 
-define Package/zabbix-get-nossl
+define Package/zabbix-get-tiny
   $(call Package/zabbix-get/Default)
-  TITLE+= (no SSL)
-  VARIANT:=nossl
+  TITLE+= (core/no SSL)
+  PROVIDES+= zabbix-get-nossl
+  VARIANT:=tiny
   DEFAULT_VARIANT:=1
 endef
 
 define Package/zabbix-get-openssl
   $(call Package/zabbix-get/Default)
-  TITLE+= (with OpenSSL)
+  TITLE+= (core/with OpenSSL)
   DEPENDS+= +libopenssl
   PROVIDES+= zabbix-get-ssl
   VARIANT:=openssl
@@ -130,7 +154,7 @@ endef
 
 define Package/zabbix-get-gnutls
   $(call Package/zabbix-get/Default)
-  TITLE+= (with GnuTLS)
+  TITLE+= (core/with GnuTLS)
   DEPENDS+= +libgnutls
   PROVIDES+= zabbix-get-ssl
   VARIANT:=gnutls
@@ -153,62 +177,144 @@ define Package/zabbix-server-postgresql/Default
   $(call Package/zabbix-server-or-proxy/Default)
   TITLE+= server postgresql
   DEPENDS+= +libpq
-  PROVIDES:=zabbix-server zabbix-server-postgresql
+  PROVIDES:=\
+    zabbix-server \
+    zabbix-server-postgresql
 endef
 
-define Package/zabbix-server-nossl-postgresql
+define Package/zabbix-server-small-postgresql
   $(call Package/zabbix-server-postgresql/Default)
-  TITLE+= (no SSL)
-  PROVIDES+= zabbix-server-nossl
-  VARIANT:=nossl-postgresql
+  TITLE+= (core/no SSL)
+  PROVIDES+= \
+    zabbix-server-nossl \
+    zabbix-server-nossl-postgresql \
+    zabbix-server-small
+  VARIANT:=small
   DEFAULT_VARIANT:=1
 endef
 
 define Package/zabbix-server-openssl-postgresql
   $(call Package/zabbix-server-postgresql/Default)
-  TITLE+= (with OpenSSL)
+  TITLE+= (core/with OpenSSL)
   DEPENDS+= +libopenssl
-  PROVIDES+= zabbix-server-ssl zabbix-server-ssl-postgresql zabbix-server-openssl
-  VARIANT:=openssl-postgresql
+  PROVIDES+= \
+    zabbix-server-openssl \
+    zabbix-server-ssl \
+    zabbix-server-ssl-postgresql
+  VARIANT:=openssl
 endef
 
 define Package/zabbix-server-gnutls-postgresql
   $(call Package/zabbix-server-postgresql/Default)
-  TITLE+= (with GnuTLS)
+  TITLE+= (core/with GnuTLS)
   DEPENDS+= +libgnutls
-  PROVIDES+= zabbix-server-ssl zabbix-server-ssl-postgresql zabbix-server-gnutls
-  VARIANT:=gnutls-postgresql
+  PROVIDES+= \
+    zabbix-server-gnutls \
+    zabbix-server-ssl \
+    zabbix-server-ssl-postgresql
+  VARIANT:=gnutls
+endef
+
+define Package/zabbix-server-full-postgresql
+	$(call Package/zabbix-server-postgresql/Default)
+  TITLE+= (full/with OpenSSL)
+  DEPENDS+= \
+    +libcurl \
+    +libnetsnmp-ssl \
+    +libopenldap \
+    +libopenssl
+  PROVIDES+= \
+    zabbix-server-full \
+    zabbix-server-openssl \
+    zabbix-server-ssl \
+    zabbix-server-ssl-postgresql
+  VARIANT:=full
+endef
+
+define Package/zabbix-server-curl-gnutls-postgresql
+  $(call Package/zabbix-server-postgresql/Default)
+  TITLE+= (core/with GnuTLS)
+  DEPENDS+= \
+    +libcurl-gnutls \
+    +libgnutls
+  PROVIDES+= \
+    zabbix-server-curl-gnutls \
+    zabbix-server-gnutls \
+    zabbix-server-ssl \
+    zabbix-server-ssl-postgresql
+  VARIANT:=gnutls-curl
 endef
 
 define Package/zabbix-server-mariadb/Default
-  $(call Package/zabbix-server-or-proxy/Default)
+	$(call Package/zabbix-server-or-proxy/Default)
   TITLE+= server mariadb
   DEPENDS+= +libmariadbclient
-  PROVIDES:= zabbix-server zabbix-server-mariadb
+  PROVIDES:= \
+    zabbix-server \
+    zabbix-server-mariadb
 endef
 
-define Package/zabbix-server-nossl-mariadb
+define Package/zabbix-server-small-mariadb
   $(call Package/zabbix-server-mariadb/Default)
-  TITLE+= (no SSL)
-  PROVIDES+= zabbix-server-nossl
-  VARIANT:=nossl-mariadb
+  TITLE+= (core/no SSL)
+  PROVIDES+= \
+    zabbix-server-nossl \
+    zabbix-server-nossl-mariadb \
+    zabbix-server-small
+  VARIANT:=small-mariadb
   DEFAULT_VARIANT:=1
 endef
 
 define Package/zabbix-server-openssl-mariadb
-  $(call Package/zabbix-server-mariadb/Default)
+	$(call Package/zabbix-server-mariadb/Default)
   TITLE+= (with OpenSSL)
   DEPENDS+= +libopenssl
-  PROVIDES+= zabbix-server-ssl zabbix-server-ssl-mariadb
+  PROVIDES+= \
+    zabbix-server-openssl \
+    zabbix-server-ssl \
+    zabbix-server-ssl-mariadb
   VARIANT:=openssl-mariadb
 endef
 
 define Package/zabbix-server-gnutls-mariadb
-  $(call Package/zabbix-server-mariadb/Default)
+	$(call Package/zabbix-server-mariadb/Default)
   TITLE+= (with GnuTLS)
   DEPENDS+= +libgnutls
-  PROVIDES+= zabbix-server-ssl zabbix-server-ssl-mariadb
+  PROVIDES+= \
+    zabbix-server-gnutls \
+    zabbix-server-ssl \
+    zabbix-server-ssl-mariadb
   VARIANT:=gnutls-mariadb
+endef
+
+define Package/zabbix-server-full-mariadb
+	$(call Package/zabbix-server-mariadb/Default)
+  TITLE+= (full/with OpenSSL)
+  DEPENDS+= \
+    +libcurl \
+    +libnetsnmp-ssl \
+    +libopenldap \
+    +libopenssl
+  PROVIDES+= \
+    zabbix-server-full \
+    zabbix-server-openssl \
+    zabbix-server-ssl \
+    zabbix-server-ssl-mariadb
+  VARIANT:=full-mariadb
+endef
+
+define Package/zabbix-server-curl-gnutls-mariadb
+	$(call Package/zabbix-server-mariadb/Default)
+  TITLE+= (cURL/with GnuTLS)
+  DEPENDS+= \
+    +libcurl-gnutls \
+    +libgnutls
+  PROVIDES+= \
+    zabbix-server-curl-gnutls \
+    zabbix-server-gnutls \
+    zabbix-server-ssl \
+    zabbix-server-mariadb-ssl
+  VARIANT:=curl-mariadb
 endef
 
 define Package/zabbix-proxy/Default
@@ -219,9 +325,11 @@ endef
 
 define Package/zabbix-proxy-tiny
 	$(call Package/zabbix-proxy/Default)
-  TITLE+= sqlite3 (no SSL)
+  TITLE+= sqlite3 (core/no SSL)
   DEPENDS += +libsqlite3
-  PROVIDES+= zabbix-proxy-nossl zabbix-proxy-sqlite
+  PROVIDES+= \
+    zabbix-proxy-nossl \
+    zabbix-proxy-sqlite
   VARIANT:=tiny
   DEFAULT_VARIANT:=1
 endef
@@ -233,57 +341,129 @@ define Package/zabbix-proxy-postgresql/Default
   PROVIDES+= zabbix-proxy-postgresql
 endef
 
-define Package/zabbix-proxy-nossl-postgresql
+define Package/zabbix-proxy-small-postgresql
   $(call Package/zabbix-proxy-postgresql/Default)
-  TITLE+= (no SSL)
-  PROVIDES+= zabbix-proxy-nossl
-  VARIANT:=nossl-postgresql
+  TITLE+= (core/no SSL)
+  PROVIDES+= \
+    zabbix-proxy-small \
+    zabbix-proxy-nossl \
+    zabbix-proxy-nossl-postgresql
+  VARIANT:=small
 endef
 
 define Package/zabbix-proxy-openssl-postgresql
   $(call Package/zabbix-proxy-postgresql/Default)
-  TITLE+= (with OpenSSL)
+  TITLE+= (core/with OpenSSL)
   DEPENDS+= +libopenssl
-  PROVIDES+= zabbix-proxy-ssl zabbix-proxy-postgresql zabbix-proxy-openssl
-  VARIANT:=openssl-postgresql
+  PROVIDES+= \
+    zabbix-proxy-openssl \
+    zabbix-proxy-ssl
+  VARIANT:=openssl
 endef
 
 define Package/zabbix-proxy-gnutls-postgresql
   $(call Package/zabbix-proxy-postgresql/Default)
-  TITLE+= (with GnuTLS)
+  TITLE+= (core/with GnuTLS)
   DEPENDS+= +libgnutls
-  PROVIDES+= zabbix-proxy-ssl zabbix-proxy-postgresql zabbix_proxy-gnutls
-  VARIANT:=gnutls-postgresql
+  PROVIDES+= \
+    zabbix_proxy-gnutls \
+    zabbix-proxy-ssl
+  VARIANT:=gnutls
+endef
+
+define Package/zabbix-proxy-full-postgresql
+	$(call Package/zabbix-proxy-postgresql/Default)
+  TITLE+= (full/with OpenSSL)
+  DEPENDS+= \
+    +libcurl \
+    +libnetsnmp-ssl \
+    +libopenldap \
+    +libopenssl
+  PROVIDES+= \
+    zabbix-proxy-full \
+    zabbix-proxy-openssl \
+    zabbix-proxy-ssl
+  VARIANT:=full
+endef
+
+define Package/zabbix-proxy-curl-gnutls-postgresql
+	$(call Package/zabbix-proxy-postgresql/Default)
+  TITLE+= (cURL/with GnuTLS)
+  DEPENDS+= \
+    +libcurl-gnutls \
+    +libgnutls
+  PROVIDES+= \
+    zabbix-proxy-curl-gnutls \
+    zabbix-proxy-gnutls \
+    zabbix-proxy-postgresql \
+    zabbix-proxy-ssl
+  VARIANT:=curl-gnutls
 endef
 
 define Package/zabbix-proxy-mariadb/Default
-  $(call Package/zabbix-proxy/Default)
+	$(call Package/zabbix-proxy/Default)
   TITLE+= mariadb
   DEPENDS+= +libmariadbclient
   PROVIDES+= zabbix-proxy-mariadb
 endef
 
-define Package/zabbix-proxy-nossl-mariadb
+define Package/zabbix-proxy-small-mariadb
   $(call Package/zabbix-proxy-mariadb/Default)
-  TITLE+= (no SSL)
-  PROVIDES+= zabbix-proxy-nossl
-  VARIANT:=nossl-mariadb
+  TITLE+= (core/no SSL)
+  PROVIDES+= \
+    zabbix-proxy-nossl \
+    zabbix-proxy-nossl-mariadb \
+    zabbix-proxy-small
+  VARIANT:=small-mariadb
 endef
 
 define Package/zabbix-proxy-openssl-mariadb
-  $(call Package/zabbix-proxy-mariadb/Default)
-  TITLE+= (with OpenSSL)
+	$(call Package/zabbix-proxy-mariadb/Default)
+  TITLE+= (core/with OpenSSL)
   DEPENDS+= +libopenssl
-  PROVIDES+= zabbix-proxy-ssl zabbix-proxy-openssl
+  PROVIDES+= \
+    zabbix-proxy-ssl \
+    zabbix-proxy-openssl
   VARIANT:=openssl-mariadb
 endef
 
 define Package/zabbix-proxy-gnutls-mariadb
-  $(call Package/zabbix-proxy-mariadb/Default)
-  TITLE+= (with GnuTLS)
+	$(call Package/zabbix-proxy-mariadb/Default)
+  TITLE+= (core/with GnuTLS)
   DEPENDS+= +libgnutls
-  PROVIDES+= zabbix-proxy-ssl zabbix-proxy-gnutls
+  PROVIDES+= \
+    zabbix-proxy-gnutls \
+    zabbix-proxy-ssl
   VARIANT:=gnutls-mariadb
+endef
+
+define Package/zabbix-proxy-full-mariadb
+	$(call Package/zabbix-proxy-mariadb/Default)
+  TITLE+= (full/with OpenSSL)
+  DEPENDS+= \
+    +libcurl \
+    +libnetsnmp-ssl \
+    +libopenldap \
+    +libopenssl
+  PROVIDES+= \
+    zabbix-proxy-full \
+    zabbix-proxy-mariadb \
+    zabbix-proxy-openssl \
+    zabbix-proxy-ssl
+  VARIANT:=full-mariadb
+endef
+
+define Package/zabbix-proxy-curl-gnutls-mariadb
+	$(call Package/zabbix-proxy-mariadb/Default)
+  TITLE+= (cURL/with GnuTLS)
+  DEPENDS+= \
+    +libcurl-gnutls \
+    +libgnutls
+  PROVIDES+= \
+    zabbix-proxy-curl-gnutls \
+    zabbix-proxy-gnutls \
+    zabbix-proxy-ssl
+  VARIANT:=curl-mariadb
 endef
 
 define Package/zabbix-extra-mac80211
@@ -333,21 +513,45 @@ define Package/zabbix-frontend-server/Default
     +php8-mod-sockets \
     +php8-mod-xmlreader \
     +php8-mod-xmlwriter
-  PROVIDES:=zabbix-frontend-server zabbix-server-frontend
-  VARIANT:=no-configure
+  PROVIDES:=\
+    zabbix-frontend-server \
+    zabbix-server-frontend
 endef
 
 define Package/zabbix-frontend-server-postgresql
   $(call Package/zabbix-frontend-server/Default)
   TITLE+= postgresql
   DEPENDS+= +php8-mod-pgsql
+  VARIANT:=no-configure
 endef
 
 define Package/zabbix-frontend-server-mariadb
-  $(call Package/zabbix-frontend-server/Default)
+	$(call Package/zabbix-frontend-server/Default)
   TITLE+= mariadb
   DEPENDS+= +php8-mod-mysqli
   VARIANT:=no-configure-mariadb
+endef
+
+define Package/zabbix-frontend-server-extra-auth-postgresql
+	$(call Package/zabbix-frontend-server/Default)
+  TITLE+= postgresql
+  DEPENDS+= \
+    +php8-mod-curl \
+    +php8-mod-ldap \
+    +php8-mod-pgsql
+  PROVIDES+= zabbix-frontend-server-extra-auth
+  VARIANT:=no-configure-extra-auth
+endef
+
+define Package/zabbix-frontend-server-extra-auth-mariadb
+	$(call Package/zabbix-frontend-server/Default)
+  TITLE+= mariadb
+  DEPENDS+= \
+    +php8-mod-curl \
+    +php8-mod-ldap \
+    +php8-mod-mysqli
+  PROVIDES+= zabbix-frontend-server-extra-auth
+  VARIANT:=no-configure-extra-auth-mariadb
 endef
 
 define Package/zabbix-extra-mac80211/description
@@ -368,42 +572,67 @@ As it uses libiwinfo, it works with all wifi devices supported by openwrt.
 See https://openwrt.org/docs/guide-user/services/network_monitoring/zabbix for ready to use zabbix templates.
 endef
 
-ifeq ($(filter no-configure no-configure-mariadb,$(BUILD_VARIANT)),)
+ifeq ($(filter no-configure no-configure-mariadb no-configure-extra-auth no-configure-extra-auth-mariadb,$(BUILD_VARIANT)),)
 
 CONFIGURE_ARGS+= \
 	$(call autoconf_bool,CONFIG_IPV6,ipv6) \
-	--disable-java \
-	--with-libevent=$(STAGING_DIR)/usr/include \
-	--with-libpcre2=$(STAGING_DIR)/usr/include \
-	--with-zlib=$(STAGING_DIR)/usr/include
+  --disable-java \
+  --with-libevent=$(STAGING_DIR)/usr/include \
+  --with-libpcre2=$(STAGING_DIR)/usr/include \
+  --with-zlib=$(STAGING_DIR)/usr/include
 
 ifeq ($(BUILD_VARIANT),tiny)
 CONFIGURE_ARGS+= --with-sqlite3=$(STAGING_DIR)/usr \
-	--disable-agent --disable-server --enable-proxy
+  --enable-agent --disable-server --enable-proxy
 endif
 
-ifneq ($(filter nossl openssl gnutls,$(BUILD_VARIANT)),)
-CONFIGURE_ARGS+= --enable-agent --disable-server --disable-proxy
+ifneq ($(filter openssl gnutls full curl-gnutls,$(BUILD_VARIANT)),)
+CONFIGURE_ARGS+= --enable-agent --enable-server --enable-proxy
 endif
 
-ifneq ($(filter nossl-postgresql openssl-postgresql gnutls-postgresql,$(BUILD_VARIANT)),)
-CONFIGURE_ARGS+= --with-postgresql --enable-server --enable-proxy
+ifneq ($(filter small small-mariadb openssl-mariadb gnutls-mariadb full-mariadb curl-mariadb,$(BUILD_VARIANT)),)
+CONFIGURE_ARGS+= --disable-agent --enable-server --enable-proxy
 endif
 
-ifneq ($(filter nossl-mariadb openssl-mariadb gnutls-mariadb,$(BUILD_VARIANT)),)
-CONFIGURE_ARGS+= --with-mysql --enable-server --enable-proxy
+ifneq ($(filter small openssl gnutls full curl-gnutls,$(BUILD_VARIANT)),)
+CONFIGURE_ARGS+= --with-postgresql
 endif
 
-ifneq ($(filter tiny nossl nossl-postgresql nossl-mariadb,$(BUILD_VARIANT)),)
+ifneq ($(filter small-mariadb openssl-mariadb gnutls-mariadb full-mariadb curl-mariadb,$(BUILD_VARIANT)),)
+CONFIGURE_ARGS+= --with-mysql
+endif
+
+ifneq ($(filter tiny small small-mariadb,$(BUILD_VARIANT)),)
 CONFIGURE_ARGS+= --with-openssl="no" --with-gnutls="no"
 endif
 
-ifneq ($(filter openssl openssl-postgresql openssl-mariadb,$(BUILD_VARIANT)),)
+ifneq ($(filter openssl openssl-mariadb full full-mariadb,$(BUILD_VARIANT)),)
 CONFIGURE_ARGS+= --with-openssl="$(STAGING_DIR)/usr"
 endif
 
-ifneq ($(filter gnutls gnutls-postgresql gnutls-mariadb,$(BUILD_VARIANT)),)
+ifneq ($(filter gnutls gnutls-mariadb curl-gnutls curl-gnutls-mariadb,$(BUILD_VARIANT)),)
 CONFIGURE_ARGS+= --with-gnutls="$(STAGING_DIR)/usr"
+endif
+
+ifneq ($(filter full full-mariadb,$(BUILD_VARIANT)),)
+CONFIGURE_ARGS += --with-ldap="$(STAGING_DIR)/usr"
+CONFIGURE_ARGS += --with-libcurl
+CONFIGURE_ARGS += \
+  ac_cv_path__libnetsnmp_config_bin="$(STAGING_DIR)/host/bin" \
+  ac_cv_path__libnetsnmp_config_root="$(STAGING_DIR)/host/bin/net-snmp-config"
+CONFIGURE_ARGS += --with-net-snmp
+endif
+
+ifneq ($(filter curl curl-mariadb,$(BUILD_VARIANT)),)
+CONFIGURE_VARS += \
+  LIBCURL_LIBS="-lcurl-gnutls" \
+  LIBCURL_CPPFLAGS="-I$(STAGING_DIR)/usr/include" \
+  LIBCURL_LDFLAGS="-L$(STAGING_DIR)/usr/lib" \
+  libcurl_cv_lib_curl_version=8.14.1 \
+  ac_cv_path__libcurl_config="/bin/true" \
+  libcurl_cv_lib_curl_usable=yes \
+  libcurl_cv_lib_curl_version_ok=yes
+CONFIGURE_ARGS += --with-libcurl="yes"
 endif
 
 else
@@ -421,6 +650,7 @@ endef
 endif
 
 ifdef CONFIG_PACKAGE_zabbix-extra-mac80211
+
 define Build/Prepare
 	$(call Build/Prepare/Default)
 	mkdir -p $(PKG_BUILD_DIR)/zabbix-extra-mac80211
@@ -439,6 +669,7 @@ define Build/Compile
     $(PKG_BUILD_DIR)/zabbix-extra-mac80211/zabbix_helper_mac80211.c \
     -o $(PKG_BUILD_DIR)/zabbix-extra-mac80211/zabbix_helper_mac80211
 endef
+
 endif
 
 MAKE_FLAGS += ARCH="linux"
@@ -524,17 +755,17 @@ define Package/zabbix-server/install-extra
 	$(INSTALL_BIN) ./files/zabbix_server.defaults $$(1)/etc/uci-defaults/90_zabbix_server
 endef
 
-$(foreach zvariant,nossl openssl gnutls,\
+$(foreach zvariant,tiny openssl gnutls full curl-gnutls,\
   $(eval $(call Package/zabbix-daemon/files,agentd,\
     $(zvariant),\
     ,\
     $(call Package/zabbix-agentd/install-extra))))
-$(foreach zvariant,nossl-postgresql openssl-postgresql gnutls-postgresql nossl-mariadb openssl-mariadb gnutls-mariadb,\
+$(foreach zvariant,small-postgresql openssl-postgresql gnutls-postgresql full-postgresql curl-gnutls-postgresql openssl-mariadb gnutls-mariadb full-mariadb curl-gnutls-mariadb,\
   $(eval $(call Package/zabbix-daemon/files,server,\
     $(zvariant),\
     $(call Package/zabbix-server/conffiles-extra),\
     $(call Package/zabbix-server/install-extra))))
-$(foreach zvariant,tiny nossl-postgresql openssl-postgresql gnutls-postgresql nossl-mariadb openssl-mariadb gnutls-mariadb,\
+$(foreach zvariant,tiny small-postgresql openssl-postgresql gnutls-postgresql full-postgresql curl-gnutls-postgresql openssl-mariadb gnutls-mariadb full-mariadb curl-gnutls-mariadb,\
   $(eval $(call Package/zabbix-daemon/files,proxy,\
     $(zvariant))))
 
@@ -543,12 +774,12 @@ $(foreach zvariant,tiny nossl-postgresql openssl-postgresql gnutls-postgresql no
 define Package/zabbix-server/postinst/Default
         define Package/zabbix-server-$(1)/postinst
   #!/bin/sh
-  [ -n "$$$${IPKG_INSTROOT}" ] || (. /etc/uci-defaults/90_zabbix_server) && rm -f /etc/uci-defaults/90_zabbix_server
+  [ -n "$${IPKG_INSTROOT}" ] || (. /etc/uci-defaults/90_zabbix_server) && rm -f /etc/uci-defaults/90_zabbix_server
   exit 0
          endef
 endef
 
-$(foreach zvariant,nossl-postgresql openssl-postgresql gnutls-postgresql nossl-mariadb openssl-mariadb gnutls-mariadb,\
+$(foreach zvariant,small-postgresql openssl-postgresql gnutls-postgresql full-postgresql curl-gnutls-postgresql small-mariadb openssl-mariadb gnutls-mariadb curl-gnutls-mariadb,\
   $(eval $(call Package/zabbix-server/postinst/Default,\
     $(zvariant))))
 
@@ -558,10 +789,10 @@ define Package/zabbix-program/files
         endef
 endef
 
-$(foreach zvariant,nossl openssl gnutls,\
+$(foreach zvariant,tiny openssl gnutls,\
   $(eval $(call Package/zabbix-program/files,sender,\
     $(zvariant))))
-$(foreach zvariant,nossl openssl gnutls,\
+$(foreach zvariant,tiny openssl gnutls,\
   $(eval $(call Package/zabbix-program/files,get,\
     $(zvariant))))
 
@@ -581,7 +812,7 @@ endef
 define Package/zabbix-extra-network/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	killall -s HUP ubusd
+  killall -s HUP ubusd
 fi
 endef
 
@@ -594,7 +825,7 @@ endef
 define Package/zabbix-extra-wifi/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	killall -s HUP ubusd
+  killall -s HUP ubusd
 fi
 endef
 
@@ -602,32 +833,47 @@ define Package/zabbix-frontend-server-postgresql/install
 	$(INSTALL_DIR) $(1)/www/zabbix
 	$(CP) $(PKG_BUILD_DIR)/ui/* $(1)/www/zabbix
 endef
-Package/zabbix-frontend-server-mariadb/install = $(Package/zabbix-frontend-server-postgresql/install)
 
-$(eval $(call BuildPackage,zabbix-agentd-nossl))
+Package/zabbix-frontend-server-mariadb/install = $(Package/zabbix-frontend-server-postgresql/install)
+Package/zabbix-frontend-server-extra-auth-postgresql/install = $(Package/zabbix-frontend-server-postgresql/install)
+Package/zabbix-frontend-server-extra-auth-mariadb/install = $(Package/zabbix-frontend-server-postgresql/install)
+
+$(eval $(call BuildPackage,zabbix-agentd-tiny))
 $(eval $(call BuildPackage,zabbix-agentd-openssl))
 $(eval $(call BuildPackage,zabbix-agentd-gnutls))
-$(eval $(call BuildPackage,zabbix-get-nossl))
+$(eval $(call BuildPackage,zabbix-agentd-full))
+$(eval $(call BuildPackage,zabbix-agentd-curl-gnutls))
+$(eval $(call BuildPackage,zabbix-get-tiny))
 $(eval $(call BuildPackage,zabbix-get-openssl))
 $(eval $(call BuildPackage,zabbix-get-gnutls))
-$(eval $(call BuildPackage,zabbix-sender-nossl))
+$(eval $(call BuildPackage,zabbix-sender-tiny))
 $(eval $(call BuildPackage,zabbix-sender-openssl))
 $(eval $(call BuildPackage,zabbix-sender-gnutls))
 $(eval $(call BuildPackage,zabbix-proxy-tiny))
-$(eval $(call BuildPackage,zabbix-proxy-nossl-postgresql))
+$(eval $(call BuildPackage,zabbix-proxy-small-postgresql))
 $(eval $(call BuildPackage,zabbix-proxy-openssl-postgresql))
 $(eval $(call BuildPackage,zabbix-proxy-gnutls-postgresql))
-$(eval $(call BuildPackage,zabbix-proxy-nossl-mariadb))
+$(eval $(call BuildPackage,zabbix-proxy-full-postgresql))
+$(eval $(call BuildPackage,zabbix-proxy-curl-gnutls-postgresql))
+$(eval $(call BuildPackage,zabbix-proxy-small-mariadb))
 $(eval $(call BuildPackage,zabbix-proxy-openssl-mariadb))
 $(eval $(call BuildPackage,zabbix-proxy-gnutls-mariadb))
-$(eval $(call BuildPackage,zabbix-server-nossl-postgresql))
+$(eval $(call BuildPackage,zabbix-proxy-full-mariadb))
+$(eval $(call BuildPackage,zabbix-proxy-curl-gnutls-mariadb))
+$(eval $(call BuildPackage,zabbix-server-small-postgresql))
 $(eval $(call BuildPackage,zabbix-server-openssl-postgresql))
 $(eval $(call BuildPackage,zabbix-server-gnutls-postgresql))
-$(eval $(call BuildPackage,zabbix-server-nossl-mariadb))
+$(eval $(call BuildPackage,zabbix-server-full-postgresql))
+$(eval $(call BuildPackage,zabbix-server-curl-gnutls-postgresql))
+$(eval $(call BuildPackage,zabbix-server-small-mariadb))
 $(eval $(call BuildPackage,zabbix-server-openssl-mariadb))
 $(eval $(call BuildPackage,zabbix-server-gnutls-mariadb))
+$(eval $(call BuildPackage,zabbix-server-full-mariadb))
+$(eval $(call BuildPackage,zabbix-server-curl-gnutls-mariadb))
 $(eval $(call BuildPackage,zabbix-extra-mac80211))
 $(eval $(call BuildPackage,zabbix-extra-network))
 $(eval $(call BuildPackage,zabbix-extra-wifi))
-$(eval $(call BuildPackage,zabbix-frontend-server))
+$(eval $(call BuildPackage,zabbix-frontend-server-postgresql))
 $(eval $(call BuildPackage,zabbix-frontend-server-mariadb))
+$(eval $(call BuildPackage,zabbix-frontend-server-extra-auth-postgresql))
+$(eval $(call BuildPackage,zabbix-frontend-server-extra-auth-mariadb))
