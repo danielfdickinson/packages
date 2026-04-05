@@ -82,8 +82,11 @@ watchcat_restart_modemmanager_iface() {
 }
 
 watchcat_restart_network_iface() {
-	logger -p daemon.info -t "watchcat[$$]" "Restarting network interface: \"$1\"."
-	ifup "$1"
+	local network
+	. /lib/network/config.sh
+	network="$(find_config "$1")"
+	logger -p daemon.info -t "watchcat[$$]" "Restarting network interface: \"$1\" (network: \"$network\")."
+	ifup "$network"
 }
 
 watchcat_run_script() {
